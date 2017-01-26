@@ -81,16 +81,21 @@ body {
 
  /* This the class for a hidden tooltip div to populate and show on hover of elements */
 #divtooltip {
-    max-width: 70%;
+    /* max-width: 10%; */
+    /* min-width: 10%; */
+    /* max-width: 50%; */
     position: absolute;
-    top: 8ex;
-    right: 2ex;
+    /* top: 8ex; */
+    /* right: 2ex; */
     border: 2px solid black;
     border-radius: 1ex;
     padding: 1ex;
     z-index: 100;
     background-color: white;
-    display: none;
+    /* display: none; */
+    /* position:fixed; */
+    /* overflow:hidden; */
+    display: inline-block;
 }
 /*  links for senses */
 

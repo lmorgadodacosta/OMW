@@ -129,6 +129,14 @@ $(function() {
 $(function() {
     $(".synset").mouseenter( function() {
 	$("#divtooltip").show();
+
+	// Get the div-tooltip to move with the mouse
+	$(document).mousemove(function(event){
+	var tooltipSpan = document.getElementById('divtooltip');
+	tooltipSpan.style.top = (event.pageY + 20) + 'px';
+	tooltipSpan.style.left = (event.pageX + 20) + 'px';
+	});
+
     });
 });
 
@@ -162,6 +170,14 @@ $(function() {
 $(function() {
     $(".sense").mouseenter( function() {
 	$("#divtooltip").show();
+
+	// Get the div-tooltip to move with the mouse
+	$(document).mousemove(function(event){
+	var tooltipSpan = document.getElementById('divtooltip');
+	tooltipSpan.style.top = (event.pageY + 20) + 'px';
+	tooltipSpan.style.left = (event.pageX + 20) + 'px';
+	});
+
     });
 });
 
