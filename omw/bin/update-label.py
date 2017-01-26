@@ -10,7 +10,15 @@ import sys, sqlite3
 from warnings import warn
 
 from collections import defaultdict as dd
-dbfile = "../db/omw.db"
+
+# It takes one argument: the name of the new database
+if (len(sys.argv) < 1):
+    sys.stderr.write('You need to give the name of the ILI DB\n')
+    sys.exit(1)
+else:
+    dbfile = sys.argv[1]
+
+# dbfile = "../db/omw.db"
 con = sqlite3.connect(dbfile)
 c = con.cursor()
 ###

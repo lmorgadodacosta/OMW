@@ -5,7 +5,16 @@ from nltk.corpus import wordnet as pwn
 
 from collections import defaultdict as dd
 
-dbfile = "../db/omw.db"
+
+# It takes one argument: the name of the new database
+if (len(sys.argv) < 1):
+    sys.stderr.write('You need to give the name of the ILI DB\n')
+    sys.exit(1)
+else:
+    dbfile = sys.argv[1]
+
+# dbfile = "../db/omw.db"
+
 con = sqlite3.connect(dbfile)
 c = con.cursor()
 #print(dir(pwn))
@@ -29,7 +38,7 @@ WHERE origin_src_id=1""")
 for r in c:
     sid2pwn[r[0]]= r[1]
     pwn2sid[r[1]]= r[0]
-    
+
 sense = dd(lambda: dd(int))
 # sense[offset][lemma] = s_id
 
