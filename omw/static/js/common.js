@@ -186,4 +186,9 @@ $(function() {
 	$("#divtooltip").hide();
     });
 });
+
+// Start with the divtooltip hidden
+$(function() {
+    $("#divtooltip").hide();
+});
 ////////////////////////////////////////////////////////////////////////////////
