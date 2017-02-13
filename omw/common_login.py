@@ -50,11 +50,12 @@ with app.app_context():
 
 
     class User(UserMixin):
-        def __init__(self, userID, password, role, group):
+        def __init__(self, userID, password, role, group, projs):
             self.id = userID
             self.password = password
             self.role = role
             self.group = group
+            self.projs = projs
 
         def get_auth_token(self):
             """ Encode a secure token for cookie """
@@ -73,9 +74,9 @@ with app.app_context():
             None, as required by Flask-Login.
             """
             user = fetch_userid(userid)
-
             if user:
-                return User(user[0], user[1], user[2], user[3])
+                projs = user[4].split('|')
+                return User(user[0], user[1], user[2], user[3], projs)
             else:
                 return None
 
@@ -83,8 +84,7 @@ with app.app_context():
     @login_manager.user_loader
     def load_user(userID):
         """ This function, given an user_id, needs to check whether this user
-        'is active' / 'exists' [FIXME, this should be done against the DB?],
-        and returns an User object. I DONT THINK SO ANYMORE!"""
+        is active/exists"""
 
         """
         Flask-Login user_loader callback.

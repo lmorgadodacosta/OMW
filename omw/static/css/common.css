@@ -125,3 +125,27 @@ span.concept_name {
     font-weight: bold;
     font-size: 150%;
 }
+
+
+
+
+
+
+/* THIS IS TO ALLOW OVER/UNDER FRACTION STYLE TEXT */
+/* USE LIKE SO: */
+/* <span class="over-under"> */
+/*   <span class="over">sup</span> */
+/*   <span class="under">sub</span> */
+/* </span> */
+span.over-under {
+    font-size: 70%;
+    position: relative;
+    /* top: 2em; */
+    display: inline-block;
+}
+span.over-under > .over {
+    display: table-row;
+}
+span.over-under > .under {
+    display: table-row;
+}

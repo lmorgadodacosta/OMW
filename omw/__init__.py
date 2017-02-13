@@ -14,6 +14,7 @@ from lxml import etree
 from common_login import *
 from common_sql import *
 from omw_sql import *
+import omw_html 
 from wn_syntax import *
 
 from math import log
@@ -175,24 +176,20 @@ def omw_lang_selector():
     selected_lang = request.cookies.get('selected_lang')
     selected_lang2 = request.cookies.get('selected_lang2')
     lang_id, lang_code = fetch_langs()
-    html = '<select name="lang" style="font-size: 85%; width: 9em" required>'
-    for lid in lang_id.keys():
-        if selected_lang == str(lid):
-            html += """<option value="{}" selected>{}</option>
-                    """.format(lid, lang_id[lid][1])
-        else:
-            html += """<option value="{}">{}</option>
-                    """.format(lid, lang_id[lid][1])
+
+    # The options in the main_lang_selector are being used
+    # to populate language selectors in the edit interfaces,
+    # which is also is setting the default language
+    html = """<select id="main_lang_selector" name="lang" 
+               style="font-size: 85%; width: 9em" required>"""
+    html += omw_html.lang_select_options(selected_lang)
     html += '</select>'
-    html += '<select name="lang2" style="font-size: 85%; width: 9em" required>'
-    for lid in lang_id.keys():
-        if selected_lang2 == str(lid):
-            html += """<option value="{}" selected>{}</option>
-                    """.format(lid, lang_id[lid][1])
-        else:
-            html += """<option value="{}">{}</option>
-                    """.format(lid, lang_id[lid][1])
+
+    html += """<select id="backoff_lang_selector" name="lang2" 
+                style="font-size: 85%; width: 9em" required>"""
+    html += omw_html.lang_select_options(selected_lang2)
     html += '</select>'
+
     return jsonify(result=html)
 
 @app.route('/_add_new_language')
@@ -207,6 +204,33 @@ def add_new_language():
     if bcp and name:
         dbinsert = insert_new_language(bcp, iso, name, user)
         return jsonify(result=dbinsert)
+    else:
+        return jsonify(result=False)
+
+
+@app.route('/_add_new_definition')
+def add_new_definition():
+    user = fetch_id_from_userid(current_user.id)
+    defi = request.args.get('def', None)
+    defi = str(Markup.escape(defi))
+    lang = request.args.get('lang', None)
+    lang = str(Markup.escape(lang))
+    if user and defi and lang:
+        # dbinsert = insert_new_language(bcp, iso, name, user)
+        # return jsonify(result=dbinsert)
+        return jsonify(result=True)
+    else:
+        return jsonify(result=False)
+
+@app.route('/_edit_definition')
+def edit_definition():
+    user = fetch_id_from_userid(current_user.id)
+    defi = request.args.get('def', None)
+    defi = str(Markup.escape(defi))
+    if user and defi and lang:
+        # dbinsert = insert_new_language(bcp, iso, name, user)
+        # return jsonify(result=dbinsert)
+        return jsonify(result=True)
     else:
         return jsonify(result=False)
 
@@ -236,9 +260,8 @@ def load_proj_details():
 
                 for attr, val in srcs_meta[src_id].items():
                     html += "<p style='margin-left: 40px'>"
-                    html += attr + ": " + val['val']
+                    html += attr + ": " + val
                     html += "</p>"
-
 
     return jsonify(result=html)
 
@@ -332,6 +355,157 @@ def report_val2():
     # else:
     #     return jsonify(result="ERROR")
     # return jsonify(result="TEST_VAL2")
+
+
+
+@app.route('/_edit_examples')
+def edit_examples():
+    """
+    This changes the examples div on a concept view.
+    It shows to an authorised user: a form allowing them to edit, 
+    add and delete examples.
+    """
+
+    # projs = fetch_proj_code()
+    srcs = fetch_src()
+    lang_id, lang_code = fetch_langs()
+
+
+    # FIND ALL SOURCES THAT ARE LINKED TO THIS PROJECT
+    edit_src_ids = []
+    proj_code = request.args.get('proj', 0)
+    if proj_code:
+        # proj_id = int(projs[proj_code])
+        for s in srcs:
+            if srcs[s][0] == proj_code:
+                edit_src_ids.append(s)
+    else:
+        proj_id = None
+
+    ss_id = request.args.get('ss', 0)
+    if ss_id:
+        ss_id = int(ss_id)
+    else:
+        ss_id = None
+
+    ssexes = fetch_ssexe_src_by_ssid(ss_id)
+
+
+    # projs = fetch_proj()
+    # srcs = fetch_src()
+    # srcs_meta = fetch_src_meta()
+
+    html = str()
+
+    # html += str(ss_id)  #TEST
+    # html += "<br>"  #TEST
+    # html += str(ssexes)  #TEST
+
+
+    # html += "<br>"
+    # html += "<br>"
+    # html += "<br>"
+
+    for ssexe_id in ssexes['src']:
+        (src_id, conf, t_src, u_src) =  ssexes['src'][ssexe_id]
+
+        # html += str(src_id)  #TEST
+        # html += "<br>"  #TEST
+        # html += str(edit_src_ids)  #TEST
+        if src_id in edit_src_ids:
+            
+            (ss, lang, exe_text, t, u) = ssexes['id'][ssexe_id]
+
+            # html += "<br>"  #TEST
+            # html += str(ssexes['id'][ssexe_id])  #TEST
+
+
+            html += "<br>"
+            html += """<input type="hidden" name="ss_id[]" value="{}">
+                    """.format(ss_id)
+
+            html += """<input type="hidden" name="ssexe_id[]" value="{}">
+                    """.format(ssexe_id)
+
+            html += """<input type="hidden" name="ssex_src_id[]" value="{}">
+                    """.format(src_id)
+
+            html += """<input type="text" name="ssex_text[]" value="{}" required>
+                    """.format(exe_text)
+
+            # Lang
+            html += """<span id="lang_selection_span">"""
+            html += """<select name="ssex_lang[]" 
+                       style="font-size: 100%; width: 9em" required>"""
+            html += omw_html.lang_select_options(lang)
+            html += """</select>"""
+            html += """</span>"""
+
+            html += """ <i class="fa fa-trash-o" aria-hidden="true"></i> """
+            html += """<span title="{}"><i class="fa fa-info-circle" 
+            aria-hidden="true"></i></span>""".format(str(u)+', '+str(t))
+
+    html += """<br><br>"""
+
+    html += """<button id="add_new_example" name="add_new_example" 
+    type="button"><i class="fa fa-plus-circle" aria-hidden="true"></i>
+    Add New Example</button> """
+
+    html += """<button type="button" class="medium green">Save Changes</button>
+    <button type="button" class="medium red" 
+    onClick="window.location.reload()">Discard Changes</button>"""
+
+    html += """<script src="{}"></script>
+    """.format(url_for('static', filename='js/omw.js'))
+    return jsonify(result=html)
+
+
+@app.route('/_add_new_example')
+def add_new_example():
+    user = fetch_id_from_userid(current_user.id)
+    proj = request.args.get('proj', None)
+    proj = str(Markup.escape(proj))
+    proj_id = f_proj_id_by_code(proj)  # Get integer ID
+    ss = request.args.get('ss', None)
+    ss = int(ss)
+    txt = request.args.get('txt', None)
+    txt = str(Markup.escape(txt))
+    lang = request.args.get('lang', None)
+    lang = int(lang)
+
+    src_id = f_src_id_by_proj_id_ver(proj_id, 'edit')
+    sys.stderr.write(str(src_id))
+
+    if not src_id:
+        new_src_id = insert_src(proj_id, 'edit', user) 
+        src_id = new_src_id[0]
+
+    # Need to get a srcID
+    if user and proj and ss and txt and lang:
+        new_ssexe_id = insert_omw_ssexe(ss, lang, txt, user)
+        new_ssexe_src_meta = insert_omw_ssexe_src(new_ssexe_id, src_id, 1, user)
+
+
+
+
+        # dbinsert = insert_new_language(bcp, iso, name, user)
+        # return jsonify(result=dbinsert)
+
+
+        # def insert_omw_ssexe(ss_id, lang_id, e, u):
+        #     return write_omw("""INSERT INTO ssexe (ss_id, lang_id, ssexe, u)
+        #                     VALUES (?,?,?,?)""",
+        #                  [ss_id, lang_id, e, u])
+        # def insert_omw_ssexe_src(ssexe_id, src_id, conf, u):
+        #     return write_omw("""INSERT INTO ssexe_src (ssexe_id, src_id, conf, u)
+        #                     VALUES (?,?,?,?)""",
+        #                  [ssexe_id, src_id, conf, u])
+
+
+
+        return jsonify(result=True)
+    else:
+        return jsonify(result=False)
 
 
 ################################################################################
@@ -527,7 +701,7 @@ def search_omw(lang=None, q=None):
 
 @app.route('/omw/concepts/<ssID>', methods=['GET', 'POST'])
 @app.route('/omw/concepts/ili/<iliID>', methods=['GET', 'POST'])
-def concepts_omw(ssID=None, iliID=None):
+def concepts_omw(ssID=None, iliID=None, src=None):
 
     if iliID:
         ss_ids = f_ss_id_by_ili_id(iliID)
@@ -554,6 +728,19 @@ def concepts_omw(ssID=None, iliID=None):
 
     ss_srcs=fetch_src_for_ss_id(ss_ids)
     src_meta=fetch_src_meta()
+
+    if src:
+        try:
+            (proj, ver) = src.split('-')
+            # src_id = f_src_id_by_proj_ver(proj, ver)
+        except:
+            proj = None
+            ver = None
+    else:
+        proj = None
+        ver = None
+
+
     return render_template('omw_concept.html',
                            ssID=ssID,
                            iliID=iliID,
@@ -570,7 +757,9 @@ def concepts_omw(ssID=None, iliID=None):
                            selected_lang2 = request.cookies.get('selected_lang2'),
                            labels=labels,
                            ss_srcs=ss_srcs,
-                           src_meta=src_meta)
+                           src_meta=src_meta,
+                           proj=proj,
+                           ver=ver)
 
 
 @app.route('/omw/senses/<sID>', methods=['GET', 'POST'])
@@ -593,10 +782,26 @@ def omw_sense(sID=None):
                            src_sid = src_sid,
                            src_meta = src_meta)
 
-    
+
+
+
+# THIS SHOULD BE THE MAIN/SEARCH PAGE FOR EACH INDIVIDUAL PROJECT
+@app.route('/omw/src/<src>', methods=['GET', 'POST'])
+def src_omw(src=None):
+
+    try:
+        (proj, ver) = src.split('-')
+        src_id = f_src_id_by_proj_ver(proj, ver)
+    except:
+        src_id = None
+
+    # return concepts_omw(ss)
+    return "FIXME. This should be an entry page for this project only! With search function, etc."
+
+
 # URIs FOR ORIGINAL CONCEPT KEYS, BY INDIVIDUAL SOURCES
 @app.route('/omw/src/<src>/<originalkey>', methods=['GET', 'POST'])
-def src_omw(src=None, originalkey=None):
+def src_omw_key(src=None, originalkey=None):
 
     try:
         (proj, ver) = src.split('-')
@@ -605,11 +810,21 @@ def src_omw(src=None, originalkey=None):
         src_id = None
 
     if src_id:
-        ss = fetch_ss_id_by_src_orginalkey(src_id, originalkey)
+        try:
+            ss = fetch_ss_id_by_src_orginalkey(src_id, originalkey)
+        except:
+            ss = None
     else:
         ss = None
 
-    return concepts_omw(ss)
+    if src_id and ss:
+        return concepts_omw(ss, src=src)
+    else:
+        return """This URI does not exist. <br>
+        If you think it should exist, then please report this."""
+
+
+
 
 
 ## show wn statistics

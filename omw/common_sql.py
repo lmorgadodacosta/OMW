@@ -81,13 +81,13 @@ with app.app_context():
 
     def fetch_userid(userID):
         user = None
-        for r in query_admin("""SELECT userID, password, 
-                                       access_level, access_group 
+        for r in query_admin("""SELECT userID, password, access_level, 
+                                       access_group, affiliation
                                 FROM users
                                 WHERE userID = ?""", [userID]):
             if r['userID']:
-                user = (r['userID'], r['password'], 
-                        r['access_level'], r['access_group'])
+                user = (r['userID'], r['password'], r['access_level'], 
+                        r['access_group'], r['affiliation'])
         return user
 
 

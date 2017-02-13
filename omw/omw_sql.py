@@ -39,6 +39,13 @@ with app.app_context():
             proj_id[r['id']]=r['code']
         return proj_id
 
+    def fetch_proj_code():
+        proj_id = dict()
+        for r in query_omw("""SELECT id, code FROM proj"""):
+            proj_id[r['code']]=r['id']
+        return proj_id
+
+
     def insert_new_project(code, u):
         " Adds a new project to the system "
         try:
@@ -417,6 +424,19 @@ with app.app_context():
                               AND ssexe = ?""",
                           [ss_id, lang_id, e]):
             return r['id']
+
+    def fetch_ssexe_src_by_ssid(ss_id):
+        ssexe_dict = dd(lambda: dd())
+        for r in query_omw(""" SELECT id, ss_id, lang_id, ssexe, u, t FROM ssexe
+                               WHERE ss_id = ?""", [ss_id]):
+            ssexe_dict['id'][r['id']]=(r['ss_id'],r['lang_id'],r['ssexe'],r['t'],r['u'])
+
+        ss_list = (",".join("?" for s in list(ssexe_dict['id'].keys())), list(ssexe_dict['id'].keys()))
+        for r in query_omw(""" SELECT ssexe_id, src_id, conf, u, t FROM ssexe_src
+                               WHERE ssexe_id in (%s) """ % (ss_list[0]), ss_list[1]):
+            ssexe_dict['src'][r['ssexe_id']]=(r['src_id'],r['conf'],r['t'],r['u'])
+        return ssexe_dict
+
 
 
     def fetch_ss_basic(synset_list):

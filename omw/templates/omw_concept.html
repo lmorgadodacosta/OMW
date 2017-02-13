@@ -1,6 +1,26 @@
 {% extends "omw.html" %}
 {% block body %}
 
+
+{% if current_user.id  %}
+
+<input type="hidden" id="current_user" name="current_user" value={{ current_user.id }}>
+<input type="hidden" id="ssID" name="ssID" value={{ssID}}>
+<input type="hidden" id="projID" name="projID" value={{proj}}>
+
+  I GOT USER OK! <br>
+  ssID:  {{ssID}} <br>
+  proj:  {{proj}} <br>
+
+
+  {% if proj and proj in current_user.projs  %}
+  I GOT USER AND PROJECT OK! This would mean EDITING IS OK!<br>
+  {%  endif %}
+
+{%  endif %}
+
+
+
 {% if ss|length == 0 %}
 <p>I am confused, I don't know the node {{ssID}}.
    This should not happen.</p>
@@ -43,9 +63,26 @@
   {% endif %}
 
     <!-- DEFINITIONS -->
-    <div id='line'><span>Definitions</span></div>
+    <div id='line'><span>Definitions</span>
+      <span id="add_new_definition" name="add_new_definition">
+	<i class="fa fa-plus-circle" aria-hidden="true"></i>
+      </span>
+    </div>
     {%- for lang_id, def in defs[ss_id].items() if (lang_id and def) %}
-      <p><span class ='lang'>{{ langs[lang_id][1] }}:</span> {{ '; '.join(def) }}</p>
+      <p><span class ='lang'>{{ langs[lang_id][1] }}:</span>
+
+      {%- for d in def %}
+	{{d}} 
+
+	  
+	  <span class="over-under">
+	    <span class="over"><i class="fa fa-trash-o" aria-hidden="true"></i></span>
+	    <span id="edit_definition" name="add_new_definition"><span class="under"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></span></span>
+	  </span>;
+
+      {%- endfor %}
+
+	</p>
     {%- endfor %}
     <!-- Show the ILI Definition if it is not the same as the English definition -->
     {% if  iliID and ili[iliID|int][1] != '; '.join(defs[ss_id][1]) %}
@@ -54,10 +91,16 @@
 
     <!-- EXAMPLES -->
     {% if ss_id in exes.keys() %}
-        <div id='line'><span>Examples</span></div>
+        <div id='line'>
+	  <span>Examples</span>
+	  <span id="edit_examples" name="edit_examples"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></span> 
+	  <span id="add_new_example_quick" name="add_new_example"><i class="fa fa-plus-circle" aria-hidden="true"></i></span>
+	</div>
+	<div id='examples-detailed'>
         {%- for lang_id, ex in exes[ss_id].items() %}
             <p><span class ='lang'>{{ langs[lang_id][1]}}: </span> {{ '; '.join(ex) }}</p>
         {%- endfor %}
+	</div>
     {% endif %}
 
     <!-- SYNSET RELS -->
