@@ -74,6 +74,13 @@ echo "Loading language data..."
 python3 seed-languages.py omw.db
 
 ###############################################################################
+# LOADING PWN CORE CONCEPTS
+###############################################################################
+echo
+echo "Loading PWN's Core data..."
+python3 load-core.py
+
+###############################################################################
 
 echo
 echo
